@@ -13,7 +13,7 @@ client = openai.OpenAI(
     timeout=60.0  
 )
 
-MODELO = "meta-llama/llama-3.3-70b-instruct:free"
+MODELO = "inclusionai/ling-3.0-flash:free"
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
