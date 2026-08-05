@@ -13,7 +13,7 @@ client = openai.OpenAI(
 )
 
 # Definir o modelo a ser utilizado
-MODELO = "google/gemma-2-9b-it:free"  # Substitua pelo modelo gratuito desejado no OpenRouter
+MODELO = "openrouter/free"  # Substitua pelo modelo gratuito desejado no OpenRouter
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
