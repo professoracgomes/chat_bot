@@ -1,64 +1,42 @@
-from flask import Flask, render_template, request
-from openai import OpenAI
 import os
+from flask import Flask, render_template, request
+import openai
 
 app = Flask(__name__)
 
-CHAVE_API = os.getenv("OPENROUTER_API_KEY")
+# Configuração da chave do OpenRouter via variável de ambiente
+CHAVE_API = os.getenv('OPENROUTER_API_KEY')
 
-client = OpenAI(
+client = openai.OpenAI(
     base_url="https://openrouter.ai/api/v1",
     api_key=CHAVE_API
 )
 
-MODELO = "openrouter/free"
+# Definir o modelo a ser utilizado
+MODELO = "google/gemma-2-9b-it:free"  # Substitua pelo modelo gratuito desejado no OpenRouter
 
-
-@app.route("/", methods=["GET", "POST"])
+@app.route('/', methods=['GET', 'POST'])
 def index():
-
     pergunta = ""
     resposta = ""
-    erro = ""
-
-    if request.method == "POST":
-
-        pergunta = request.form.get("pergunta", "").strip()
-
-        if not pergunta:
-            erro = "Digite uma pergunta antes de enviar."
-
-        elif not CHAVE_API:
-            erro = "A variável OPENROUTER_API_KEY não foi configurada."
-
-        else:
+    
+    if request.method == 'POST':
+        pergunta = request.form.get('pergunta', '')
+        if pergunta.strip():
             try:
-                resultado = client.chat.completions.create(
+                completion = client.chat.completions.create(
                     model=MODELO,
                     messages=[
-                        {
-                            "role": "user",
-                            "content": pergunta
-                        }
+                        {"role": "user", "content": pergunta}
                     ]
                 )
-
-                resposta = resultado.choices[0].message.content
-
+                resposta = completion.choices[0].message.content
             except Exception as e:
-                erro = f"Não foi possível consultar a IA: {e}"
+                resposta = f"Erro ao processar a pergunta: {str(e)}"
+                
+    return render_template('index.html', pergunta=pergunta, resposta=resposta)
 
-    return render_template(
-        "index.html",
-        pergunta=pergunta,
-        resposta=resposta,
-        erro=erro
-    )
-
-
-if __name__ == "__main__":
-    app.run(
-        host="0.0.0.0",
-        port=int(os.getenv("PORT", 5000)),
-        debug=True
-    )
+if __name__ == '__main__':
+    # Utiliza a porta definida pelo servidor de hospedagem (Render)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port)
